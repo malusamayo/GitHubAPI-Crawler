@@ -12,3 +12,6 @@ __pycache__/
 repositories_notebook.txt
 repositories_python.txt
 .venv
+github-repos
+notebooks
+kaggle-notebooks
