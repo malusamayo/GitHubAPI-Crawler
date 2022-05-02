@@ -26,12 +26,20 @@ def nb_convert(dir_path):
             p=subprocess.Popen(['jupyter', 'nbconvert', file, '--to', 'python'])
     os.chdir(owd)
 
-if __name__ == "__main__":
-    date = "2021-01-06"
-    # extract(os.path.join("github-repos", date))
-    nb_path = os.path.join("notebooks", date)
+def process(date):
+    repo_path = os.path.join("GitHub-data", "github-repos", date)
+    extract(repo_path)
+    nb_path = os.path.join("GitHub-data", "notebooks", date)
+    repo_path = nb_path = "kaggle-notebooks/house-prices-advanced-regression-techniques_voted"
     if not os.path.exists(nb_path):
         os.mkdir(nb_path)      
-    os.system(f"grep -e torch -e keras -e sklearn -rl --include='*.ipynb' --exclude-dir='.*' github-repos/{date}/* | sort > {os.path.join(nb_path, 'nbs.txt')}")
+    os.system(f"grep -e torch -e keras -e sklearn -rl --include='*.ipynb' --exclude-dir='.*' {repo_path}/* | sort > {os.path.join(nb_path, 'nbs.txt')}")
     copy2(nb_path)
     nb_convert(nb_path)
+
+if __name__ == "__main__":
+    # process("date")
+    dates = ["2021-09-" + str(date).zfill(2) for date in range(1, 31)]
+    # dates = ["2021-01-05"]
+    for date in dates:
+        process(date)
