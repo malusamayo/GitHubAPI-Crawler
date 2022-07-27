@@ -3,6 +3,7 @@ This repository downloads data for evaluation.
 - GitHub data: download repositories using `main.py`; extract notebooks using `gather-nbs.py`
 - Kaggle data: download solutions using `download_kaggle.py`
 - Data analysis: performed in `gather_info.py` and `result_analysis.ipynb`
+- Detailed information of evaluation: stored in `evaluation_materials`
 
 Below are general instructions to use the crawler:
 ## To execute the script
