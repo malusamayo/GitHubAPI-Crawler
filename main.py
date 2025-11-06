@@ -1,10 +1,33 @@
 import os, sys
 import subprocess
 import json
+from datetime import datetime, timedelta
 from github_api import GitHubAPI, _tokens
 from tqdm import tqdm
 
 MAX_SIZE_MB = 100  # for example, skip repos >100 MB
+
+def generate_date_range(start_date, end_date):
+    """
+    Generate a list of dates from start_date to end_date (inclusive).
+
+    Args:
+        start_date: Start date in format "YYYY-MM-DD"
+        end_date: End date in format "YYYY-MM-DD"
+
+    Returns:
+        List of date strings in format "YYYY-MM-DD"
+    """
+    start = datetime.strptime(start_date, "%Y-%m-%d")
+    end = datetime.strptime(end_date, "%Y-%m-%d")
+
+    dates = []
+    current = start
+    while current <= end:
+        dates.append(current.strftime("%Y-%m-%d"))
+        current += timedelta(days=1)
+
+    return dates
 
 def download(repo, date, dir_path="github-repos"):
     repo_size_mb = repo.get('size', 0) / 1024  # convert from KB to MB
@@ -47,7 +70,13 @@ if __name__ == "__main__":
     dir_path = "github-repos"
 
     #Search repos
-    dates = ["2025-09-" + str(date).zfill(2) for date in range(1, 31)]
+    # Option 1: Use date range generator
+    dates = generate_date_range("2025-01-01", "2025-02-28")
+
+    # Option 2: Manual list comprehension (old way)
+    # dates = ["2025-09-" + str(date).zfill(2) for date in range(1, 31)]
+
+    # Option 3: Single date
     # dates = ["2021-09-06"]
     interval = 12
     time_pairs = [(f"T{str(x).zfill(2)}:00:00", f"T{str(x+interval-1).zfill(2)}:59:59") for x in range(0, 24, interval)]
