@@ -11,6 +11,8 @@ import os.path
 import init
 from fetch_raw_diff import *
 from util import localfile
+from dotenv import load_dotenv
+import os
 
 # try:
 #     import settings
@@ -19,8 +21,9 @@ from util import localfile
 
 # _tokens = getattr(settings, "SCRAPER_GITHUB_API_TOKENS", [])
 
-with open(init.currentDIR+"/data/token.txt", 'r') as file:
-    _tokens = [line.rstrip('\n') for line in file]
+load_dotenv()
+
+_tokens = [os.getenv("GITHUB_API_TOKEN")]
 
 logger = logging.getLogger('ghd.scraper')
 

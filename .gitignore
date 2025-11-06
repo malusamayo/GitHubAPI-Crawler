@@ -16,3 +16,5 @@ github-repos
 notebooks
 GitHub-data
 kaggle-notebooks
+poetry.lock
+.env

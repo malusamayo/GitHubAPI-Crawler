@@ -33,14 +33,14 @@ if __name__ == "__main__":
 
 
     #Search repos
-    dates = ["2021-09-" + str(date).zfill(2) for date in range(30, 31)]
+    dates = ["2025-09-" + str(date).zfill(2) for date in range(30, 31)]
     # dates = ["2021-09-06"]
-    interval = 2
+    interval = 1
     time_pairs = [(f"T{str(x).zfill(2)}:00:00", f"T{str(x+interval-1).zfill(2)}:59:59") for x in range(0, 24, interval)]
     for date in dates:
         meta_data = []
         for st, ed in time_pairs:
-            res = api.get_repo("Jupyter%20Notebook",date+st,date+ed)
+            res = api.get_repo("Python",date+st,date+ed)
             for repo in res['items']:
                 download(repo, date)
             meta_data += res['items']
