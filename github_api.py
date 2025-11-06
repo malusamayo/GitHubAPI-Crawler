@@ -716,7 +716,13 @@ class GitHubAPI(object):
         # append to repos['items'] list
         # keep going through the results pages and extract ['items']
         # append extracted items to original
-        url = 'search/repositories?q=language%3A\"'+language+'\"+created%3A'+created_date_from+'..'+created_date_to+"&s=stars"
+        url = (
+            'search/repositories?q=language:"' + language + '"' + 
+            '+stars%3A>5' + 
+            '+created:' + created_date_from + '..' + created_date_to +
+            '&s=stars'
+        )
+        # print(url)
         repos = self.request(url, paginate=False)
         page = 1
         total_repos = min(repos['total_count'], 1000)
