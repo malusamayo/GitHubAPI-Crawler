@@ -1,6 +1,7 @@
 import os, sys
 import subprocess
 import json
+import argparse
 from datetime import datetime, timedelta
 from github_api import GitHubAPI, _tokens
 from tqdm import tqdm
@@ -56,38 +57,73 @@ def write_metadata(data, date, dir_path="github-repos"):
     with open(output_path, 'w') as f:
         f.write(json.dumps(data))
 
-if __name__ == "__main__":
+def main():
+    parser = argparse.ArgumentParser(
+        description="Download GitHub repositories for specified date range"
+    )
+    parser.add_argument(
+        '--start-date',
+        required=True,
+        help='Start date in format YYYY-MM-DD (e.g., 2025-01-01)'
+    )
+    parser.add_argument(
+        '--end-date',
+        required=True,
+        help='End date in format YYYY-MM-DD (e.g., 2025-02-28)'
+    )
+    parser.add_argument(
+        '--language',
+        default='Python',
+        help='Programming language to search for (default: Python)'
+    )
+    parser.add_argument(
+        '--interval',
+        type=int,
+        default=12,
+        help='Time interval in hours for API queries (default: 12)'
+    )
+    parser.add_argument(
+        '--output-dir',
+        default='github-repos',
+        help='Output directory for downloaded repositories (default: github-repos)'
+    )
+    parser.add_argument(
+        '--max-size',
+        type=int,
+        default=100,
+        help='Maximum repository size in MB to download (default: 100)'
+    )
+
+    args = parser.parse_args()
+
+    # Update global MAX_SIZE_MB
+    global MAX_SIZE_MB
+    MAX_SIZE_MB = args.max_size
+
     api = GitHubAPI()
-    # # query github api with URL https://api.github.com/repos/jquery/jquery/pulls/4406/commits
-    #     # res = api.request("repos/jquery/jquery/pulls/4406/commits")
-    #     #
 
-    # query issue/pr timeline
-    #  api doc: https://developer.github.com/v3/issues/timeline/#list-timeline-events-for-an-issue
-    # the following query the events for https://github.com/jquery/jquery/pull/4406/
-    # events = api.get_issue_pr_timeline("jquery/jquery", 4406)
+    # Generate date range
+    dates = generate_date_range(args.start_date, args.end_date)
 
-    dir_path = "github-repos"
+    # Generate time pairs based on interval
+    time_pairs = [
+        (f"T{str(x).zfill(2)}:00:00", f"T{str(x+args.interval-1).zfill(2)}:59:59")
+        for x in range(0, 24, args.interval)
+    ]
 
-    #Search repos
-    # Option 1: Use date range generator
-    dates = generate_date_range("2025-01-01", "2025-02-28")
-
-    # Option 2: Manual list comprehension (old way)
-    # dates = ["2025-09-" + str(date).zfill(2) for date in range(1, 31)]
-
-    # Option 3: Single date
-    # dates = ["2021-09-06"]
-    interval = 12
-    time_pairs = [(f"T{str(x).zfill(2)}:00:00", f"T{str(x+interval-1).zfill(2)}:59:59") for x in range(0, 24, interval)]
+    # Process each date
     for date in tqdm(dates, desc="Processing dates"):
         meta_data = []
         for st, ed in tqdm(time_pairs, desc=f"Time intervals for {date}", leave=False):
-            res = api.get_repo("Python",date+st,date+ed)
+            res = api.get_repo(args.language, date+st, date+ed)
             for repo in tqdm(res['items'], desc="Downloading repos", leave=False):
-                download(repo, date, dir_path=dir_path)
+                download(repo, date, dir_path=args.output_dir)
             meta_data += res['items']
-        write_metadata(meta_data, date, dir_path=dir_path)
+        write_metadata(meta_data, date, dir_path=args.output_dir)
+
+
+if __name__ == "__main__":
+    main()
 
 # compare download cnts:
 # startdate='2021-09-01'; echo {0..6} | xargs -I{} -d ' ' date --date="$startdate +"{}" days" +"%Y-%m-%d" |  while read DATE ; do (echo $DATE; ls github-repos/$DATE -l | wc -l; curl -s https://api.github.com/search/repositories\?q\=language%3A%22Jupyter%20Notebook%22+created%3A$DATE\&s\=stars | jq .total_count;) done
